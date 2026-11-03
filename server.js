@@ -58,21 +58,20 @@ const app = express();
 // also localhost.
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allow =
-    !origin ||
-    /^https?:\/\/localhost(:\d+)?$/i.test(origin) ||
-    /^https?:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin) ||
-    /^https?:\/\/\[::1\](:\d+)?$/i.test(origin);
-  if (!allow) {
-    return res.status(403).json({ error: 'Cross-origin request refused' });
-  }
+
   if (origin) {
+    // Dynamically allow any domain that sends a request
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   }
-  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  // Handle preflight OPTIONS requests immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   next();
 });
 
